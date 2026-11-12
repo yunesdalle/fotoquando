@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fotoquando</title>
+<meta name="description" content="Todo dia, 5 fotos de pessoas. Adivinhe o ano de cada uma e some pontos.">
+<!-- Troque o endereco abaixo pelo endereco final do jogo e suba o arquivo capa.png junto do HTML -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Fotoquando">
+<meta property="og:description" content="Todo dia, 5 fotos de pessoas. Em que ano foram tiradas? Quanto mais perto, mais pontos.">
+<meta property="og:image" content="https://SEU-DOMINIO/capa.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://SEU-DOMINIO/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Fotoquando">
+<meta name="twitter:description" content="Todo dia, 5 fotos de pessoas. Em que ano foram tiradas?">
+<meta name="twitter:image" content="https://SEU-DOMINIO/capa.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --azul:#0E2F4F; --azul2:#16436D; --papel:#EEF3F7; --ambar:#F2B84B; --tinta:#0A1F35; --suave:#9DB6CC;
+  --serif:'Fraunces',Georgia,serif; --sans:'Instrument Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{background:var(--azul);color:var(--papel);font-family:var(--sans);line-height:1.5;padding:20px 16px 48px}
+main{max-width:560px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px}
+h1{font-family:var(--serif);font-weight:800;font-size:1.9rem;letter-spacing:-.02em}
+.meta{color:var(--suave);font-size:.9rem}
+.passos{display:flex;gap:6px;margin-bottom:16px}
+.passos span{flex:1;height:6px;border-radius:3px;background:var(--azul2)}
+.passos span.ok{background:var(--ambar)}
+.passos span.atual{background:var(--papel)}
+.foto{background:var(--papel);padding:12px 12px 40px;border-radius:3px;box-shadow:0 14px 30px rgba(0,0,0,.35);transform:rotate(-.6deg)}
+.foto .quadro{aspect-ratio:4/3;background:#cfd9e2;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.foto img{width:100%;height:100%;object-fit:contain;display:block;background:#cfd9e2}
+.vazio{color:var(--tinta);text-align:center;padding:20px;font-size:.95rem}
+.legenda{color:var(--tinta);font-family:var(--serif);font-size:1rem;margin-top:10px;min-height:1.5em;text-align:center}
+.palpite{margin-top:26px;text-align:center}
+input.ano{display:block;width:100%;background:transparent;border:0;border-bottom:2px dashed var(--azul2);color:var(--ambar);text-align:center;font-family:var(--serif);font-weight:800;font-size:5rem;line-height:1.1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;padding:0}
+input.ano:focus{outline:none;border-bottom-color:var(--ambar)}
+.dica{color:var(--suave);font-size:.8rem;margin-top:4px}
+.regua{display:flex;align-items:center;gap:10px;margin:14px 0 4px}
+.regua button.passo{width:44px;height:44px;border-radius:50%;border:2px solid var(--suave);background:transparent;color:var(--papel);font-size:1.4rem;cursor:pointer;flex:none}
+input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:44px;background:transparent;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:repeating-linear-gradient(90deg,var(--suave) 0 2px,transparent 2px 10px) bottom/100% 14px no-repeat,var(--azul2)}
+input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:var(--azul2)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:34px;border-radius:5px;background:var(--papel);margin-top:-13px;border:3px solid var(--ambar)}
+input[type=range]::-moz-range-thumb{width:20px;height:28px;border-radius:5px;background:var(--papel);border:3px solid var(--ambar)}
+.extremos{display:flex;justify-content:space-between;color:var(--suave);font-size:.85rem;padding:0 54px}
+.btn{display:block;width:100%;margin-top:18px;padding:15px;border:0;border-radius:8px;background:var(--ambar);color:var(--tinta);font:600 1.05rem var(--sans);cursor:pointer}
+.btn:disabled{opacity:.5;cursor:default}
+.trocar{display:block;margin:14px auto 0;background:none;border:0;color:var(--suave);font:.85rem var(--sans);text-decoration:underline;cursor:pointer}
+:focus-visible{outline:3px solid var(--papel);outline-offset:3px}
+.resultado{margin-top:22px;background:var(--azul2);border-radius:10px;padding:18px}
+.resultado .linha{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px}
+.resultado .grande{font-family:var(--serif);font-weight:800;font-size:2.2rem;color:var(--ambar)}
+.linha-tempo{position:relative;height:34px;margin:16px 6px 6px}
+.linha-tempo::before{content:"";position:absolute;left:0;right:0;top:16px;height:3px;background:var(--suave);border-radius:2px}
+.marca{position:absolute;top:6px;width:4px;height:24px;margin-left:-2px;border-radius:2px}
+.marca.t{background:var(--ambar)}
+.marca.p{background:var(--papel)}
+.marca small{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:.7rem;white-space:nowrap;color:var(--papel)}
+.credito{margin-top:12px;font-size:.8rem;color:var(--suave);overflow-wrap:anywhere}
+.credito a{color:var(--papel)}
+.final{text-align:center}
+.final .total{font-family:var(--serif);font-weight:800;font-size:4.2rem;color:var(--ambar);line-height:1.1}
+.final .de{color:var(--suave);margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 4px}
+.stats div{background:var(--azul2);border-radius:8px;padding:10px 4px}
+.stats b{display:block;font-family:var(--serif);font-size:1.4rem;color:var(--papel)}
+.stats small{color:var(--suave);font-size:.72rem}
+.redes{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px}
+.rede{padding:12px;border:2px solid var(--suave);border-radius:8px;color:var(--papel);text-decoration:none;text-align:center;background:transparent;font:600 .95rem var(--sans);cursor:pointer}
+.rede:hover{border-color:var(--papel)}
+.contagem{margin-top:18px;color:var(--ambar);font-variant-numeric:tabular-nums;font-weight:600}
+.lista{text-align:left;margin-top:20px;display:grid;gap:10px}
+.item{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;background:var(--azul2);border-radius:8px;padding:8px}
+.item .mini{width:64px;height:48px;background:#cfd9e2;border-radius:3px;overflow:hidden}
+.item .mini img{width:100%;height:100%;object-fit:cover}
+.item .pts{font-family:var(--serif);font-weight:800;font-size:1.2rem;color:var(--ambar)}
+.item small{color:var(--suave)}
+.oculto{display:none}
+@media (prefers-reduced-motion:no-preference){input.ano.bump{animation:bump .25s}}
+@keyframes bump{50%{transform:scale(1.06)}}
+@media (max-width:420px){input.ano{font-size:4rem}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Fotoquando</h1>
+    <div class="meta" id="data"></div>
+  </header>
+
+  <section id="jogo">
+    <div class="passos" id="passos"></div>
+    <div class="foto">
+      <div class="quadro" id="quadro"></div>
+      <div class="legenda" id="legenda"></div>
+    </div>
+
+    <div id="blocoPalpite" class="palpite">
+      <input class="ano" id="anoValor" type="text" inputmode="numeric" maxlength="4" value="1958" aria-label="Digite o ano da foto">
+      <div class="dica">Digite o ano ou use a régua</div>
+      <div class="regua">
+        <button class="passo" id="menos" aria-label="Voltar um ano">-</button>
+        <input type="range" id="regua" min="1890" max="2026" step="1" value="1958" aria-label="Ano da foto">
+        <button class="passo" id="mais" aria-label="Avançar um ano">+</button>
+      </div>
+      <div class="extremos"><span>1890</span><span>2026</span></div>
+      <button class="btn" id="confirmar">Confirmar palpite</button>
+      <button class="trocar" id="trocar">Foto ruim? Trocar por outra (1 vez por dia)</button>
+    </div>
+
+    <div id="blocoResultado" class="oculto">
+      <div class="resultado">
+        <div class="linha"><span>Seu palpite</span><b id="rPalpite"></b></div>
+        <div class="linha"><span>Ano real</span><b id="rReal"></b></div>
+        <div class="linha"><span id="rDiff"></span><span class="grande" id="rPts"></span></div>
+        <div class="linha-tempo" id="linha"></div>
+        <div class="credito" id="credito"></div>
+      </div>
+      <button class="btn" id="proxima">Próxima foto</button>
+    </div>
+  </section>
+
+  <section id="fim" class="final oculto">
+    <div class="meta">Pontuação do dia</div>
+    <div class="total" id="total"></div>
+    <div class="de">de 5000 pontos possíveis</div>
+    <div class="stats" id="stats"></div>
+    <button class="btn" id="nativo">Compartilhar resultado</button>
+    <div class="redes">
+      <a class="rede" id="rWhats" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="rede" id="rX" target="_blank" rel="noopener">X (Twitter)</a>
+      <a class="rede" id="rFace" target="_blank" rel="noopener">Facebook</a>
+      <a class="rede" id="rTele" target="_blank" rel="noopener">Telegram</a>
+    </div>
+    <div class="redes">
+      <button class="rede" id="copiar">Copiar texto</button>
+      <button class="rede" id="baixar">Baixar imagem</button>
+    </div>
+    <div class="contagem" id="contagem"></div>
+    <div class="lista" id="lista"></div>
+  </section>
+</main>
+
+<script>
+/* ============================================================
+   FOTOQUANDO
+   Todo dia o jogo busca 5 fotos de PESSOAS no Wikimedia Commons, nas categorias
+   "People of PAIS in ANO" e "ANO portrait photographs". So entram fotos cuja data
+   registrada no arquivo bate com o ano da categoria. O dia vira no horario de
+   Brasilia e o sorteio e feito pela data, entao todo mundo joga as mesmas fotos.
+   Se a busca falhar, entra uma lista de reserva.
+   ============================================================ */
+const RODADAS = 5, ANO_MIN = 1890, ANO_MAX = 2026, MAX_PTS = 1000;
+const ESCALA = 22; /* quanto menor, mais rigorosa a pontuacao */
+const COMMONS = 'https://commons.wikimedia.org/';
+const API = COMMONS + 'w/api.php';
+
+/* Reserva (so pessoas), com ano conferido */
+const FIXAS = [
+  {titulo:'JOBURG (1893) Group of mining workers and overseer.jpg', ano:1893, legenda:'Mineiros em Joanesburgo, África do Sul'},
+  {titulo:'Einstein 1921 by F Schmutzer - restoration.jpg', ano:1921, legenda:'Albert Einstein'},
+  {titulo:'Lunch atop a Skyscraper - Charles Clyde Ebbets.jpg', ano:1932, legenda:'Operários almoçando sobre uma viga, em Nova York'},
+  {titulo:'Lange-MigrantMother02.jpg', ano:1936, legenda:'Mãe migrante, retrato de Dorothea Lange'},
+  {titulo:'Raising the Flag on Iwo Jima, larger - edit.jpg', ano:1945, legenda:'Bandeira sendo erguida em Iwo Jima'},
+  {titulo:'Martin Luther King - March on Washington.jpg', ano:1963, legenda:'Martin Luther King na Marcha sobre Washington'},
+  {titulo:'Thefalloftheberlinwall1989.JPG', ano:1989, legenda:'Queda do Muro de Berlim'}
+];
+function fixaParaFoto(f){
+  return {titulo:f.titulo, url: COMMONS + 'wiki/Special:FilePath/' + encodeURIComponent(f.titulo) + '?width=1000',
+          pagina: COMMONS + 'wiki/File:' + encodeURIComponent(f.titulo.replace(/ /g,'_')), ano:f.ano, legenda:f.legenda, autor:'', licenca:''};
+}
+function pontos(dif){ return Math.round(MAX_PTS * Math.exp(-dif / ESCALA)); }
+
+/* ---------- data no horario de Brasilia e sorteio ---------- */
+function hoje(){
+  return new Intl.DateTimeFormat('en-CA', {timeZone:'America/Sao_Paulo', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date());
+}
+function dataLonga(k){ return new Date(k + 'T12:00:00').toLocaleDateString('pt-BR', {day:'2-digit', month:'long'}); }
+function dataCurta(k){ return k.split('-').reverse().join('/'); }
+function semente(str){ let h = 1779033703 ^ str.length; for(let i=0;i<str.length;i++){ h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; } return h >>> 0; }
+function mulberry(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function pick(arr, r){ return arr[Math.floor(r() * arr.length)]; }
+function embaralhar(arr, r){ const a = arr.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ---------- fotos marcadas como ruins neste aparelho ---------- */
+const RK = 'fotoquando-ruins';
+let RUINS = new Set();
+try { RUINS = new Set(JSON.parse(localStorage.getItem(RK)) || []); } catch(e){}
+
+/* ---------- busca no Wikimedia Commons ---------- */
+async function api(params){
+  const q = new URLSearchParams(Object.assign({action:'query', format:'json', origin:'*'}, params));
+  const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 9000);
+  try { const r = await fetch(API + '?' + q, {signal: ctl.signal}); if(!r.ok) throw new Error('api'); return await r.json(); }
+  finally { clearTimeout(to); }
+}
+async function membros(cat, tipo){
+  const d = await api({list:'categorymembers', cmtitle:cat, cmtype:tipo, cmlimit:'500'});
+  return ((d.query && d.query.categorymembers) || []).map(m => m.title);
+}
+const ehImagem = t => /\.(jpe?g|png)$/i.test(t);
+const TITULO_RUIM = /\b(scan|document|map|letter|poster|stamp|coin|certificate|passport|cover|newspaper|page|plate|signature|autograph|logo|flag|coat of arms|diagram|chart|grave|tomb|painting|drawing|illustration|engraving|lithograph|sketch|sculpture|statue|bust|caricature|cartoon|woodcut|etching|watercolou?r)\b/i;
+/* Obras de arte (pinturas, desenhos, gravuras, esculturas...) nao sao fotografias */
+const ARTE = /\b(paintings?|painted|oil painting|drawings?|illustrations?|engravings?|lithographs?|sketch(es)?|artworks?|works? of art|sculptures?|statues?|busts?|caricatures?|cartoons?|woodcuts?|etchings?|watercolou?rs?|oil on canvas|miniatures?|frescoes?|murals?|comics?|pastels?|mosaics?|tapestr(y|ies)|stained glass|woodblock|ukiyo-e|lithography|pintura|desenho|gravura|escultura|ilustra[cç][aã]o)\b/i;
+async function arquivosDe(cat, r, prof){
+  const [arqs, subs] = await Promise.all([membros(cat, 'file'), membros(cat, 'subcat')]);
+  const boas = arqs.filter(ehImagem);
+  if(boas.length && (!subs.length || prof === 0 || r() < 0.6)) return boas;
+  if(subs.length && prof > 0) return arquivosDe(pick(subs, r), r, prof - 1);
+  return boas;
+}
+/* Devolve uma lista de arquivos de PESSOAS tirados naquele ano */
+async function arquivoDoAno(ano, r){
+  const limpar = lista => lista.filter(t => !RUINS.has(t) && !TITULO_RUIM.test(t));
+  try{
+    const d = await api({list:'search', srsearch:'intitle:"People of" intitle:"in ' + ano + '"', srnamespace:'14', srlimit:'50'});
+    const re = new RegExp('^Category:People of .+ in ' + ano + '$');
+    const cats = embaralhar(((d.query && d.query.search) || []).map(x => x.title).filter(t => re.test(t)), r);
+    for(const c of cats.slice(0, 4)){
+      const arqs = limpar(await arquivosDe(c, r, 1));
+      if(arqs.length) return embaralhar(arqs, r).slice(0, 20);
+    }
+  }catch(e){}
+  const raizes = embaralhar(['Category:' + ano + ' portrait photographs of men', 'Category:' + ano + ' portrait photographs of women', 'Category:' + ano + ' black and white photographs of people'], r);
+  for(const c of raizes){
+    try{ const arqs = limpar(await arquivosDe(c, r, 2)); if(arqs.length) return embaralhar(arqs, r).slice(0, 20); }catch(e){}
+  }
+  return null;
+}
+function textoLimpo(html){ return new DOMParser().parseFromString(html || '', 'text/html').body.textContent.replace(/\s+/g, ' ').trim(); }
+function legendaPT(t){
+  if(!t || /\b(the|and|of|with|from|at|on|by)\b/i.test(t)) return '';
+  if(!/\b(de|da|do|das|dos|em|com|uma|para|que|na|no)\b|[ãõç]/i.test(t)) return '';
+  return t.length > 180 ? t.slice(0, 177) + '...' : t;
+}
+/* Consulta ate 20 arquivos de uma vez e devolve so os validos para aquele ano */
+async function detalhes(titulos, ano){
+  const d = await api({titles:titulos.join('|'), prop:'imageinfo', iiprop:'url|mime|size|extmetadata', iiurlwidth:'1000', iiextmetadatalanguage:'pt-br'});
+  const validos = [];
+  for(const pg of Object.values((d.query && d.query.pages) || {})){
+    const ii = pg.imageinfo && pg.imageinfo[0];
+    if(!ii || !/^image\/(jpeg|png)$/.test(ii.mime)) continue;
+    const prop = ii.width / ii.height;
+    if(ii.width < 700 || ii.height < 450 || prop < 0.55 || prop > 2.2) continue;
+    const em = ii.extmetadata || {};
+    const dataTxt = textoLimpo(em.DateTimeOriginal && em.DateTimeOriginal.value);
+    const anos = new Set(dataTxt.match(/\b(1[89]\d\d|20[0-2]\d)\b/g) || []);
+    if(anos.size !== 1 || !anos.has(String(ano)) || /\b(circa|ca\.|c\.|before|after|between|entre|antes|depois)\b/i.test(dataTxt)) continue;
+    const cats = textoLimpo(em.Categories && em.Categories.value).replace(/\|/g, ' ');
+    const descBruta = textoLimpo(em.ImageDescription && em.ImageDescription.value);
+    if(ARTE.test(cats) || ARTE.test(pg.title) || ARTE.test(descBruta) || (em.ObjectName && ARTE.test(textoLimpo(em.ObjectName.value)))) continue;
+    const autor = textoLimpo(em.Artist && em.Artist.value);
+    validos.push({
+      titulo: pg.title, url: ii.thumburl || ii.url, pagina: ii.descriptionurl, ano: ano,
+      legenda: legendaPT(textoLimpo(em.ImageDescription && em.ImageDescription.value)),
+      autor: autor.length > 90 ? autor.slice(0, 87) + '...' : autor,
+      licenca: textoLimpo(em.LicenseShortName && em.LicenseShortName.value)
+    });
+  }
+  return validos.sort((x, y) => x.url < y.url ? -1 : 1);
+}
+function testarImagem(url){
+  return new Promise(res => {
+    const im = new Image(); let fim = false;
+    const fecha = ok => { if(!fim){ fim = true; res(ok); } };
+    im.onload = () => fecha(true); im.onerror = () => fecha(false);
+    setTimeout(() => fecha(false), 9000);
+    im.src = url;
+  });
+}
+/* Busca uma foto valida; a mesma semente gera a mesma foto para todo mundo */
+async function buscarFoto(seed){
+  const r = mulberry(semente(seed));
+  for(let t = 0; t < 8; t++){
+    const ano = ANO_MIN + Math.floor(r() * (ANO_MAX - ANO_MIN + 1));
+    try{
+      const titulos = await arquivoDoAno(ano, r); if(!titulos || !titulos.length) continue;
+      const validos = await detalhes(titulos, ano);
+      for(const d of validos.slice(0, 3)){ if(await testarImagem(d.url)) return d; }
+    }catch(e){}
+  }
+  return null;
+}
+async function montarDia(chave){
+  const achadas = await Promise.all([0,1,2,3,4].map(i => buscarFoto('fq' + chave + i)));
+  const r = mulberry(semente('reserva' + chave));
+  const ok = achadas.filter(Boolean);
+  for(const f of embaralhar(FIXAS, r)){
+    if(ok.length >= RODADAS) break;
+    const p = fixaParaFoto(f);
+    if(await testarImagem(p.url)) ok.push(p);
+  }
+  return ok.length >= RODADAS ? embaralhar(ok, r).slice(0, RODADAS) : null;
+}
+
+/* ---------- estado do dia e estatisticas ---------- */
+const CHAVE = hoje();
+const ARMAZ = 'fotoquando7-' + CHAVE;
+function carregar(){ try { return JSON.parse(localStorage.getItem(ARMAZ)) || {palpites:[]}; } catch(e){ return {palpites:[]}; } }
+function salvar(){ try { localStorage.setItem(ARMAZ, JSON.stringify(estado)); } catch(e){} }
+let estado = carregar();
+let DIA = [];
+let revelada = false;
+
+const SK = 'fotoquando-stats';
+function lerStats(){ try { return JSON.parse(localStorage.getItem(SK)) || {dias:{}}; } catch(e){ return {dias:{}}; } }
+function diaAnterior(k){ const d = new Date(k + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); }
+function registrarStats(total){
+  const s = lerStats(); s.dias[CHAVE] = total;
+  try { localStorage.setItem(SK, JSON.stringify(s)); } catch(e){}
+  const v = Object.values(s.dias);
+  let seq = 0, k = CHAVE; while(s.dias[k] !== undefined){ seq++; k = diaAnterior(k); }
+  return {seq: seq, media: Math.round(v.reduce((a, b) => a + b, 0) / v.length), melhor: Math.max(...v), jogos: v.length};
+}
+
+const $ = id => document.getElementById(id);
+const regua = $('regua'), anoIn = $('anoValor');
+$('data').textContent = dataLonga(CHAVE);
+
+/* ---------- entrada do ano (digitar ou regua) ---------- */
+function limitar(v){ return Math.min(ANO_MAX, Math.max(ANO_MIN, v)); }
+function valorAno(){ const v = parseInt(anoIn.value, 10); return isNaN(v) ? +regua.value : limitar(v); }
+function bump(){ anoIn.classList.remove('bump'); void anoIn.offsetWidth; anoIn.classList.add('bump'); }
+function atualizarAno(){ anoIn.value = regua.value; bump(); }
+regua.addEventListener('input', atualizarAno);
+anoIn.addEventListener('input', () => {
+  anoIn.value = anoIn.value.replace(/\D/g, '');
+  const v = parseInt(anoIn.value, 10);
+  if(anoIn.value.length === 4 && v >= ANO_MIN && v <= ANO_MAX) regua.value = v;
+});
+anoIn.addEventListener('change', () => { regua.value = valorAno(); anoIn.value = regua.value; });
+anoIn.addEventListener('focus', () => anoIn.select());
+anoIn.addEventListener('keydown', e => { if(e.key === 'Enter'){ $('confirmar').click(); } });
+function mudar(d){ regua.value = limitar(valorAno() + d); atualizarAno(); }
+$('menos').onclick = () => mudar(-1);
+$('mais').onclick = () => mudar(1);
+
+/* ---------- rodadas ---------- */
+function montarFoto(el, foto){
+  el.innerHTML = '';
+  const img = new Image();
+  img.alt = 'Foto para adivinhar o ano';
+  img.onerror = function(){ el.innerHTML = '<div class="vazio">Não foi possível carregar esta imagem.<br>Verifique sua conexão e recarregue a página.</div>'; };
+  img.src = foto.url;
+  el.appendChild(img);
+}
+function desenharPassos(atual){
+  $('passos').innerHTML = DIA.map((_, i) => '<span class="' + (i < estado.palpites.length ? 'ok' : (i === atual ? 'atual' : '')) + '"></span>').join('');
+}
+function mostrarRodada(){
+  const n = estado.palpites.length;
+  if(n >= RODADAS){ return mostrarFinal(); }
+  revelada = false;
+  $('jogo').classList.remove('oculto'); $('fim').classList.add('oculto');
+  $('blocoPalpite').classList.remove('oculto'); $('blocoResultado').classList.add('oculto');
+  $('trocar').classList.toggle('oculto', !!estado.trocou); $('trocar').disabled = false;
+  desenharPassos(n);
+  montarFoto($('quadro'), DIA[n]);
+  $('legenda').textContent = '';
+  atualizarAno();
+}
+function pos(ano){ return ((ano - ANO_MIN) / (ANO_MAX - ANO_MIN) * 100).toFixed(2) + '%'; }
+
+$('confirmar').onclick = function(){
+  if(revelada) return;
+  revelada = true;
+  const n = estado.palpites.length, foto = DIA[n];
+  const palpite = valorAno();
+  const dif = Math.abs(palpite - foto.ano), pts = pontos(dif);
+  estado.palpites.push(palpite); salvar();
+  $('legenda').textContent = foto.legenda || '';
+  const cred = $('credito'); cred.textContent = '';
+  const quem = foto.autor ? 'Foto: ' + foto.autor + (foto.licenca ? ' (' + foto.licenca + ')' : '') + '. ' : 'Autor e licença estão na página da fonte. ';
+  cred.appendChild(document.createTextNode(quem));
+  const a = document.createElement('a'); a.href = foto.pagina; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Wikimedia Commons';
+  cred.appendChild(a);
+  $('rPalpite').textContent = palpite;
+  $('rReal').textContent = foto.ano;
+  $('rDiff').textContent = dif === 0 ? 'Acertou o ano' : dif + (dif === 1 ? ' ano de diferença' : ' anos de diferença');
+  $('rPts').textContent = '+' + pts;
+  $('linha').innerHTML =
+    '<div class="marca p" style="left:' + pos(palpite) + '"><small>você</small></div>' +
+    '<div class="marca t" style="left:' + pos(foto.ano) + '"><small>real</small></div>';
+  $('blocoPalpite').classList.add('oculto'); $('blocoResultado').classList.remove('oculto');
+  $('proxima').textContent = estado.palpites.length >= RODADAS ? 'Ver pontuação do dia' : 'Próxima foto';
+  desenharPassos(-1);
+};
+$('proxima').onclick = mostrarRodada;
+
+/* Troca uma foto ruim por outra (1 vez por dia) e lembra a ruim neste aparelho */
+$('trocar').onclick = async function(){
+  if(estado.trocou || revelada) return;
+  const n = estado.palpites.length, atual = DIA[n];
+  this.disabled = true;
+  if(atual.titulo){ RUINS.add(atual.titulo); try { localStorage.setItem(RK, JSON.stringify([...RUINS])); } catch(e){} }
+  $('quadro').innerHTML = '<div class="vazio">Buscando outra foto...</div>';
+  const nova = await buscarFoto('troca' + CHAVE + n);
+  if(nova){ DIA[n] = nova; estado.fotos[n] = nova; estado.trocou = true; salvar(); $('trocar').classList.add('oculto'); }
+  else { this.disabled = false; }
+  montarFoto($('quadro'), DIA[n]);
+};
+
+function calcular(){
+  return estado.palpites.map((p, i) => ({foto: DIA[i], palpite: p, dif: Math.abs(p - DIA[i].ano), pts: pontos(Math.abs(p - DIA[i].ano))}));
+}
+function mostrarFinal(){
+  const r = calcular(), total = r.reduce((s, x) => s + x.pts, 0);
+  $('jogo').classList.add('oculto'); $('fim').classList.remove('oculto');
+  $('total').textContent = total;
+  const st = registrarStats(total);
+  $('stats').innerHTML = [[st.seq, 'dias seguidos'], [st.media, 'média'], [st.melhor, 'melhor dia'], [st.jogos, 'dias jogados']]
+    .map(x => '<div><b>' + x[0] + '</b><small>' + x[1] + '</small></div>').join('');
+  $('lista').innerHTML = r.map((x, i) =>
+    '<div class="item"><div class="mini" id="mini' + i + '"></div><div><b>Real: ' + x.foto.ano + '</b><br><small>Seu palpite: ' + x.palpite + ' (' + x.dif + ' de diferença)</small></div><div class="pts">' + x.pts + '</div></div>'
+  ).join('');
+  r.forEach((x, i) => {
+    const img = new Image(); img.alt = '';
+    img.onerror = () => img.remove();
+    img.src = x.foto.url;
+    $('mini' + i).appendChild(img);
+  });
+  prepararCompartilhar();
+  iniciarContagem();
+}
+
+/* ---------- contagem para as proximas fotos (meia-noite em Brasilia) ---------- */
+let relogio = null;
+function iniciarContagem(){
+  const el = $('contagem'); clearInterval(relogio);
+  function tick(){
+    const br = new Date(Date.now() - 3 * 3600e3);
+    const ms = Date.UTC(br.getUTCFullYear(), br.getUTCMonth(), br.getUTCDate() + 1) - br.getTime();
+    if(ms <= 0){ location.reload(); return; }
+    const p = n => String(n).padStart(2, '0');
+    el.textContent = 'Próximas fotos em ' + p(Math.floor(ms / 3600e3)) + ':' + p(Math.floor(ms / 60e3) % 60) + ':' + p(Math.floor(ms / 1e3) % 60);
+  }
+  tick(); relogio = setInterval(tick, 1000);
+}
+
+/* ---------- compartilhamento ---------- */
+/* COLE AQUI O LINK DO JOGO (ex: 'https://fotoquando.com.br/'). Ele vai junto em todas as mensagens
+   compartilhadas. Se ficar vazio, o jogo usa o endereco da propria pagina quando ela estiver publicada. */
+const LINK_DO_JOGO = '';
+function urlJogo(){
+  if(LINK_DO_JOGO) return LINK_DO_JOGO;
+  return /^https?:/.test(location.href) ? location.origin + location.pathname : '';
+}
+function textoResultado(){
+  const r = calcular(), total = r.reduce((s, x) => s + x.pts, 0);
+  const linhas = r.map((x, i) => (i + 1) + '. ' + x.pts + ' pts').join('\n');
+  return 'Fotoquando ' + dataCurta(CHAVE) + '\nFiz ' + total + ' de 5000 pontos adivinhando o ano das fotos.\n' + linhas + '\nConsegue me superar?';
+}
+function textoCompleto(){ const u = urlJogo(); return textoResultado() + (u ? '\n' + u : ''); }
+function gerarImagem(){
+  return new Promise(res => {
+    const r = calcular(), total = r.reduce((s, x) => s + x.pts, 0);
+    const c = document.createElement('canvas'); c.width = 1080; c.height = 1350;
+    const g = c.getContext('2d');
+    const serif = "Fraunces, Georgia, serif", sans = "'Instrument Sans', system-ui, sans-serif";
+    g.fillStyle = '#0E2F4F'; g.fillRect(0, 0, 1080, 1350);
+    g.textAlign = 'center'; g.fillStyle = '#EEF3F7'; g.font = '800 96px ' + serif; g.fillText('Fotoquando', 540, 150);
+    g.fillStyle = '#9DB6CC'; g.font = '36px ' + sans; g.fillText(dataLonga(CHAVE) + ' de ' + CHAVE.slice(0, 4), 540, 210);
+    g.fillStyle = '#F2B84B'; g.font = '800 230px ' + serif; g.fillText(String(total), 540, 460);
+    g.fillStyle = '#EEF3F7'; g.font = '40px ' + sans; g.fillText('de 5000 pontos', 540, 530);
+    r.forEach((x, i) => {
+      const y = 620 + i * 120;
+      g.fillStyle = '#16436D'; g.fillRect(90, y, 900, 96);
+      g.fillStyle = '#F2B84B'; g.fillRect(90, y, 900 * x.pts / MAX_PTS, 96);
+      g.fillStyle = '#0A1F35'; g.textAlign = 'left'; g.font = '600 38px ' + sans;
+      g.fillText('Foto ' + (i + 1), 118, y + 61);
+      g.textAlign = 'right'; g.font = '800 44px ' + serif; g.fillStyle = '#EEF3F7'; g.fillText(String(x.pts), 968, y + 62);
+      g.textAlign = 'center';
+    });
+    g.fillStyle = '#9DB6CC'; g.font = '34px ' + sans;
+    g.fillText(urlJogo().replace(/^https?:\/\//, '') || 'Adivinhe o ano de cada foto', 540, 1270);
+    c.toBlob(b => res(b), 'image/png');
+  });
+}
+function prepararCompartilhar(){
+  const t = textoResultado(), u = urlJogo(), tc = textoCompleto();
+  $('rWhats').href = 'https://wa.me/?text=' + encodeURIComponent(tc);
+  $('rX').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(t) + (u ? '&url=' + encodeURIComponent(u) : '');
+  $('rTele').href = 'https://t.me/share/url?url=' + encodeURIComponent(u || ' ') + '&text=' + encodeURIComponent(t);
+  if(u){ $('rFace').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u) + '&quote=' + encodeURIComponent(t); }
+  else { $('rFace').classList.add('oculto'); }
+  if(!navigator.share){ $('nativo').classList.add('oculto'); }
+}
+$('nativo').onclick = async function(){
+  const t = textoResultado(), u = urlJogo();
+  try{
+    const blob = await gerarImagem();
+    const arq = new File([blob], 'fotoquando.png', {type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[arq]})){ await navigator.share({files:[arq], text:textoCompleto()}); }
+    else { await navigator.share(u ? {title:'Fotoquando', text:t, url:u} : {title:'Fotoquando', text:t}); }
+  }catch(e){}
+};
+$('copiar').onclick = function(){
+  const btn = this, texto = textoCompleto();
+  const ok = () => { btn.textContent = 'Texto copiado'; setTimeout(() => btn.textContent = 'Copiar texto', 2000); };
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(texto).then(ok, () => prompt('Copie o resultado:', texto)); }
+  else { prompt('Copie o resultado:', texto); }
+};
+$('baixar').onclick = async function(){
+  const blob = await gerarImagem();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'fotoquando-' + CHAVE + '.png';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+};
+
+/* ---------- inicio ---------- */
+async function iniciar(){
+  $('blocoPalpite').classList.add('oculto');
+  $('quadro').innerHTML = '<div class="vazio">Buscando as fotos de hoje...</div>';
+  if(estado.fotos && estado.fotos.length === RODADAS){ DIA = estado.fotos; }
+  else {
+    const dia = await montarDia(CHAVE);
+    if(!dia){
+      $('quadro').innerHTML = '<div class="vazio">Não foi possível buscar as fotos agora.<br>Verifique sua conexão e recarregue a página.</div>';
+      return;
+    }
+    DIA = dia; estado.fotos = dia; salvar();
+  }
+  mostrarRodada();
+}
+iniciar();
+</script>
+</body>
+</html>
